@@ -43,7 +43,7 @@ public class RelationshipDao {
         return result;
     }
 
-    @Transactional
+
     public List<UserTable> getFOFlist(List<UserTable> users, RelationType relType) {
         List<UserTable> result = new ArrayList<>();
         for(UserTable user: users) {
@@ -102,7 +102,7 @@ public class RelationshipDao {
         return null; //Doesn't exists
     }
     
-    @Transactional
+
     public Relationship createNewRelation(UserTable user_a, UserTable user_b) {
         EntityManager em = EntityManagerProvider.get();
         Relationship newRelation = new Relationship(user_a, user_b, RelationType.Request.ordinal());

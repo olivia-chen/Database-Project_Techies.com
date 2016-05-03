@@ -60,6 +60,8 @@ public class DiaryDao {
         //System.out.println("+++++++++++++++++++++++++++search result: " + result.size());
         return result;
     }
+
+    @Transactional
     public List<Diary> getDiaryFromUsers(UserTable userlist) {
         EntityManager em = EntityManagerProvider.get();
         List<Diary> result = new ArrayList<>();

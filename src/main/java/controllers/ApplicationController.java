@@ -56,6 +56,7 @@ public class ApplicationController {
     @Inject MailController mailController;
     @Inject ProfileDao profileDao;
     @Inject DiaryCommentDao diaryComment;
+    @Inject ProfileCommentDao profileCommentDao;
 
     @FilterWith(LoginFilter.class)
     public Result index(Context context) {
@@ -63,6 +64,7 @@ public class ApplicationController {
         return Results.redirect(Globals.PathMainPage);
     }
 
+    @Transactional
     @FilterWith(LoginFilter.class)
     public Result news(Context context) {
         // Initial declarations
@@ -201,11 +203,28 @@ public class ApplicationController {
 
     @Transactional
     @FilterWith(LoginFilter.class)
-    public Result post_comment (@Param("post") String Post, @Param("content") String Content, @Param("returnto") String returnto, Context context) {
+    public Result profile_comment (@Param("profile") String Profile, @Param("content") String Content, @Param("returnto") String returnto, Context context) {
         Session session = context.getSession();
         EntityManager em = EntityManagerProvider.get();
 
        UserTable user = userTableDao.getUserFromSession(context);
+
+        ProfileComment newComment = new ProfileComment(user, Long.valueOf(Profile), Content, new Timestamp(new Date().getTime()));
+        em.persist(newComment);
+
+        if(returnto == null)
+            return Results.redirect(Globals.PathRoot);
+        else
+            return Results.redirect(returnto + "#comment_" + newComment.getId());
+    }
+
+    @Transactional
+    @FilterWith(LoginFilter.class)
+    public Result post_comment (@Param("post") String Post, @Param("content") String Content, @Param("returnto") String returnto, Context context) {
+        Session session = context.getSession();
+        EntityManager em = EntityManagerProvider.get();
+
+        UserTable user = userTableDao.getUserFromSession(context);
 
         Comment newComment = new Comment(user, Long.valueOf(Post), Content, new Timestamp(new Date().getTime()));
         em.persist(newComment);
@@ -307,11 +326,11 @@ public class ApplicationController {
 
         Relationship relationship = relationshipDao.getRelationByUsername(actualUser, targetUser);
         Profile profile= profileDao.getProfileFromProfile(targetUser);
+        List<ProfileComment> profileComments = profileCommentDao.getCommentsFromProfile(profile);
 
         List<Diary> diary = diaryDao.getDiaryFromUsers(targetUser);
         List<DiaryComment> diaryComments=diaryComment.getCommentsByPosts(diary);
         html.render("diary", diary);
-
         html.render("diarycomments",diaryComments);
         boolean disable_add = false;
 
@@ -343,7 +362,7 @@ public class ApplicationController {
         html.render("fof", fOf);
         html.render("disable_add", disable_add);
         html.render("profile",profile);
-
+        html.render("profileComments", profileComments);
         return html;
     }
 
@@ -404,7 +423,7 @@ public class ApplicationController {
 
         return html;
     }
-    @Transactional
+
     @FilterWith(LoginFilter.class)
     public Result showdiary(@PathParam("diaryid") Long diary_id, Context context) {
         // Initial declarations
@@ -426,7 +445,7 @@ public class ApplicationController {
         return html;
     }
 
-    @Transactional
+
     @FilterWith(LoginFilter.class)
     public Result diary_create (@Param("content") String content, @Param("title")String title, Context context) {
         //System.out.print("BEGINING test");
@@ -453,7 +472,7 @@ public class ApplicationController {
         return html;
     }
 
-    //@Transactional
+
     @FilterWith(LoginFilter.class)
     public Result diary_create_view (Context context) {
         Result html = Results.html();
@@ -474,7 +493,7 @@ public class ApplicationController {
         return html;
     }
 
-    @Transactional
+
     @FilterWith(LoginFilter.class)
     public Result profile_create (Context context, @Param("birthday") String birthday, @Param("gender")String gender, @Param("hobby") String hobby,@Param("marital_status")String marital_status, @Param("work_place")String work_place,@Param("helper")String helper) {
 
@@ -512,6 +531,7 @@ public class ApplicationController {
 
 
     }
+    @FilterWith(LoginFilter.class)
     public Result self_profile_view(Context context) {
         // Initial declarations
         Result html = Results.html();
@@ -526,7 +546,7 @@ public class ApplicationController {
 
         return html;
     }
-    @Transactional
+
     @FilterWith(LoginFilter.class)
     public Result post_diary_comment (@Param("diary") String Post, @Param("content") String Content, @Param("returnto") String returnto, Context context) {
         Session session = context.getSession();

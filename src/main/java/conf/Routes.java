@@ -40,6 +40,7 @@ public class Routes implements ApplicationRoutes {
 
         router.POST().route("/post/create").with(ApplicationController.class, "post_create");
         router.POST().route("/post/comment").with(ApplicationController.class, "post_comment");
+        router.POST().route("/profile/comment").with(ApplicationController.class, "profile_comment");
 
         router.GET().route("/profile").with(ApplicationController.class, "profile");
         router.POST().route("/profile/set").with(ApplicationController.class, "profile_set");

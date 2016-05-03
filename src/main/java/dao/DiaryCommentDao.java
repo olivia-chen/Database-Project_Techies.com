@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TableGenerator;
+
+import com.google.inject.persist.Transactional;
 import models.Comment;
 import models.Post;
 import models.UserTable;
@@ -17,6 +20,7 @@ public class DiaryCommentDao {
     @Inject
     Provider<EntityManager> EntityManagerProvider;
 
+    @Transactional
     public List<DiaryComment> getCommentsByPosts(List<Diary> diary) {
         if(diary.size() > 0) {
             EntityManager em = EntityManagerProvider.get();
@@ -40,6 +44,8 @@ public class DiaryCommentDao {
         }
         return null;
     }
+
+    @Transactional
     public List<DiaryComment> getCommentsBySearchresult(Diary diary){
 
         EntityManager em = EntityManagerProvider.get();
@@ -60,6 +66,8 @@ public class DiaryCommentDao {
         return comments;
 
     }
+
+    @Transactional
     public List<DiaryComment> getCommentsBydiary(Diary diary) {
 
         EntityManager em = EntityManagerProvider.get();
