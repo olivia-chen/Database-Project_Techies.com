@@ -172,8 +172,8 @@ public class ApplicationController {
                 User_session uSession = new User_session(canLogin);
                 em.persist(uSession);
                 context.getSession().put(Globals.CookieSession, uSession.getId());
-                Profile profile = new Profile(uSession.getUser(), "This guy is lazy, he did not wirte anything!"," "," "," "," "," ");
-                em.persist(profile);
+                //Profile profile = new Profile(uSession.getUser(), "This guy is lazy, he did not wirte anything!"," "," "," "," "," ");
+                //em.persist(profile);
                 return Results.redirect(Globals.PathProfile);
             } else {
                 //return Results.redirect(Globals.PathMainPage);
@@ -235,21 +235,6 @@ public class ApplicationController {
             return Results.redirect(returnto + "#comment_" + newComment.getId());
     }
 
-    @FilterWith(LoginFilter.class)
-    public Result profile (Context context) {
-        // Initial declarations
-        Result html = Results.html();
-
-       UserTable actualUser = userTableDao.getUserFromSession(context);
-        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
-        List<Relationship> friendRequest = relationshipDao.getFriendRequests(actualUser);
-
-        html.render("user", actualUser);
-        html.render("friends", mutualFriends);
-        html.render("requests", friendRequest);
-
-        return html;
-    }
 
     @FilterWith(LoginFilter.class)
     public Result friend_add(@PathParam("username") String pUsername, Context context) {
@@ -303,68 +288,7 @@ public class ApplicationController {
         return Results.redirect(Globals.PathRoot);
     }
 
-    @Transactional
-    @FilterWith(LoginFilter.class)
-    public Result profile_set (@Param("content") String status, Context context) {
-        EntityManager em = EntityManagerProvider.get();
-       UserTable user = userTableDao.getUserFromSession(context);
 
-        user.setStatus(status);
-
-        return Results.redirect(Globals.PathProfile);
-    }
-    @Transactional
-    @FilterWith(LoginFilter.class)
-    public Result profile_view(@PathParam("userid") Long userid, Context context) {
-        // Initial declarations
-        Result html = Results.html();
-
-        UserTable actualUser = userTableDao.getUserFromSession(context);
-        UserTable targetUser = userTableDao.getUserFromUserid(userid);
-        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
-        List<UserTable> fOf = relationshipDao.getRelationList(targetUser, RelationType.Friends);
-
-        Relationship relationship = relationshipDao.getRelationByUsername(actualUser, targetUser);
-        Profile profile= profileDao.getProfileFromProfile(targetUser);
-        List<ProfileComment> profileComments = profileCommentDao.getCommentsFromProfile(profile);
-
-        List<Diary> diary = diaryDao.getDiaryFromUsers(targetUser);
-        List<DiaryComment> diaryComments=diaryComment.getCommentsByPosts(diary);
-        html.render("diary", diary);
-        html.render("diarycomments",diaryComments);
-        boolean disable_add = false;
-
-        if(relationship != null) {
-            if (relationship.getRelation_type() == RelationType.Friends.ordinal() || relationship.getRelation_type() == RelationType.Request.ordinal()) {
-                html.render("relation", relationship);
-                disable_add = (relationship.getRelation_type() == RelationType.Request.ordinal()) && Objects.equals(relationship.getUser_a().getId(), actualUser.getId());
-
-                if(relationship.getRelation_type() == RelationType.Friends.ordinal()) {
-                    // Get mutual friends post
-                    List<Post> posts = postDao.getPostsFromUsersWithPermission(new ArrayList<>(Arrays.asList(targetUser)), PermissionType.PRIVATE.getValue());
-                    //List<Comment> comments
-                    List<Comment> comments = commentDao.getCommentsByPosts(posts);
-
-                    html.render("posts", posts);
-                    html.render("comments", comments);
-
-                }
-            } else {
-                return Results.redirect(Globals.PathError);
-            }
-        } else {
-            html.render("relation", new Relationship(actualUser, targetUser, RelationType.None.ordinal()));
-        }
-
-        html.render("user", actualUser);
-        html.render("target", targetUser);
-        html.render("friends", mutualFriends);
-        html.render("fof", fOf);
-        html.render("disable_add", disable_add);
-        html.render("profile",profile);
-        html.render("profileComments", profileComments);
-        return html;
-    }
 
     @Transactional
     @FilterWith(LoginFilter.class)
@@ -494,58 +418,8 @@ public class ApplicationController {
     }
 
 
-    @FilterWith(LoginFilter.class)
-    public Result profile_create (Context context, @Param("birthday") String birthday, @Param("gender")String gender, @Param("hobby") String hobby,@Param("marital_status")String marital_status, @Param("work_place")String work_place,@Param("helper")String helper) {
-
-        Result html = Results.html();
-
-        Session session = context.getSession();
-        EntityManager em = EntityManagerProvider.get();
-        UserTable actualUser = userTableDao.getUserFromSession(context);
-
-        Profile newProfile= new Profile(actualUser,birthday,gender,hobby,marital_status,work_place,helper);
-
-        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
 
 
-        if(profileDao.getProfileFromProfile(actualUser)!=null) {
-            profileDao.getProfileFromProfile(actualUser).setAuthor(actualUser);
-            profileDao.getProfileFromProfile(actualUser).setBirthday(birthday);
-            profileDao.getProfileFromProfile(actualUser).setGender(gender);
-            profileDao.getProfileFromProfile(actualUser).setHobby(hobby);
-            profileDao.getProfileFromProfile(actualUser).setMarital_status(marital_status);
-            profileDao.getProfileFromProfile(actualUser).setHelper(helper);
-            profileDao.getProfileFromProfile(actualUser).setWork_place(work_place);
-            em.persist(profileDao.getProfileFromProfile(actualUser));
-        }
-        else{
-            em.persist(newProfile);
-        }
-
-        html.render("user", actualUser);
-        html.render("friends", mutualFriends);
-        html.render("profile",newProfile);
-
-
-        return html;
-
-
-    }
-    @FilterWith(LoginFilter.class)
-    public Result self_profile_view(Context context) {
-        // Initial declarations
-        Result html = Results.html();
-
-        UserTable actualUser = userTableDao.getUserFromSession(context);
-        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
-        Profile profile= profileDao.getProfileFromProfile(actualUser);
-
-        html.render("user", actualUser);
-        html.render("friends", mutualFriends);
-        html.render("profile",profile);
-
-        return html;
-    }
 
     @FilterWith(LoginFilter.class)
     public Result post_diary_comment (@Param("diary") String Post, @Param("content") String Content, @Param("returnto") String returnto, Context context) {
@@ -562,5 +436,135 @@ public class ApplicationController {
         else
             return Results.redirect(returnto + "#comment_" + newComment.getId());
     }
+    @FilterWith(LoginFilter.class)
+    public Result editProfile(Context context) {
+        // Initial declarations
+        Result html = Results.html();
 
+        UserTable actualUser = userTableDao.getUserFromSession(context);
+        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
+        Profile profile= profileDao.getProfileFromUser(actualUser.getId());
+
+        html.render("user", actualUser);
+        html.render("friends", mutualFriends);
+        html.render("profile",profile);
+
+        return html;
+    }
+    @FilterWith(LoginFilter.class)
+    public Result profile_create (Context context, @Param("birthday") String birthday, @Param("gender")String gender, @Param("hobby") String hobby,@Param("marital_status")String marital_status, @Param("work_place")String work_place,@Param("helper")String helper) {
+
+        Result html = Results.html();
+
+        Session session = context.getSession();
+        EntityManager em = EntityManagerProvider.get();
+        UserTable actualUser = userTableDao.getUserFromSession(context);
+
+        Profile newProfile= new Profile(actualUser,birthday,gender,hobby,work_place);
+
+        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
+
+
+        /*if(profileDao.getProfileFromProfile(actualUser)!=null) {
+            profileDao.getProfileFromProfile(actualUser).setAuthor(actualUser);
+            profileDao.getProfileFromProfile(actualUser).setBirthday(birthday);
+            profileDao.getProfileFromProfile(actualUser).setGender(gender);
+            profileDao.getProfileFromProfile(actualUser).setHobby(hobby);
+            //profileDao.getProfileFromProfile(actualUser).setMarital_status(marital_status);
+            //profileDao.getProfileFromProfile(actualUser).setHelper(helper);
+            profileDao.getProfileFromProfile(actualUser).setWorkPlace(work_place);
+            em.persist(profileDao.getProfileFromProfile(actualUser));
+        }
+        else{
+            em.persist(newProfile);
+        }*/
+
+        html.render("user", actualUser);
+        html.render("friends", mutualFriends);
+        html.render("profile",newProfile);
+
+
+        return html;
+
+
+    }
+    @Transactional
+    @FilterWith(LoginFilter.class)
+    public Result profile_set (@Param("content") String status, Context context) {
+        EntityManager em = EntityManagerProvider.get();
+        UserTable user = userTableDao.getUserFromSession(context);
+
+        user.setStatus(status);
+
+        return Results.redirect(Globals.PathProfile);
+    }
+    @Transactional
+    @FilterWith(LoginFilter.class)
+    public Result profile_view(@PathParam("userid") Long userid, Context context) {
+        // Initial declarations
+        Result html = Results.html();
+
+        UserTable actualUser = userTableDao.getUserFromSession(context);
+        UserTable targetUser = userTableDao.getUserFromUserid(userid);
+        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
+        List<UserTable> fOf = relationshipDao.getRelationList(targetUser, RelationType.Friends);
+
+        Relationship relationship = relationshipDao.getRelationByUsername(actualUser, targetUser);
+        Profile profile= profileDao.getProfileFromUser(targetUser.getId());
+        List<ProfileComment> profileComments = profileCommentDao.getCommentsFromProfile(profile);
+
+        List<Diary> diary = diaryDao.getDiaryFromUsers(targetUser);
+        List<DiaryComment> diaryComments=diaryComment.getCommentsByPosts(diary);
+        html.render("diary", diary);
+        html.render("diarycomments",diaryComments);
+        boolean disable_add = false;
+
+        if(relationship != null) {
+            if (relationship.getRelation_type() == RelationType.Friends.ordinal() || relationship.getRelation_type() == RelationType.Request.ordinal()) {
+                html.render("relation", relationship);
+                disable_add = (relationship.getRelation_type() == RelationType.Request.ordinal()) && Objects.equals(relationship.getUser_a().getId(), actualUser.getId());
+
+                if(relationship.getRelation_type() == RelationType.Friends.ordinal()) {
+                    // Get mutual friends post
+                    List<Post> posts = postDao.getPostsFromUsersWithPermission(new ArrayList<>(Arrays.asList(targetUser)), PermissionType.PRIVATE.getValue());
+                    //List<Comment> comments
+                    List<Comment> comments = commentDao.getCommentsByPosts(posts);
+
+                    html.render("posts", posts);
+                    html.render("comments", comments);
+
+                }
+            } else {
+                return Results.redirect(Globals.PathError);
+            }
+        } else {
+            html.render("relation", new Relationship(actualUser, targetUser, RelationType.None.ordinal()));
+        }
+
+        html.render("user", actualUser);
+        html.render("target", targetUser);
+        html.render("friends", mutualFriends);
+        html.render("fof", fOf);
+        html.render("disable_add", disable_add);
+        html.render("profile",profile);
+        html.render("profileComments", profileComments);
+        return html;
+    }
+
+
+    @FilterWith(LoginFilter.class)
+    public Result profile (Context context) {
+        // Initial declarations
+        Result html = Results.html();
+
+        UserTable actualUser = userTableDao.getUserFromSession(context);
+        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
+        List<Relationship> friendRequest = relationshipDao.getFriendRequests(actualUser);
+
+        html.render("user", actualUser);
+        html.render("friends", mutualFriends);
+        html.render("requests", friendRequest);
+
+        return html;
+    }
 }
