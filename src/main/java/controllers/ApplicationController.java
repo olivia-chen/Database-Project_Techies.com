@@ -295,8 +295,6 @@ public class ApplicationController {
     public Result search_result(@Param("keyword") String keyword, Context context) {
         // Initial declarations
         Result html = Results.html();
-
-
         EntityManager em = EntityManagerProvider.get();
         Session session = context.getSession();
 
@@ -308,10 +306,7 @@ public class ApplicationController {
         List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
         mutualFriends.add(actualUser);
 
-
-
         List<UserTable>  userResult = userTableDao.getUserListFromKeyword(keyword);
-
 
         List<Post> postResult = postDao.getPostFromKeyword(keyword);
 
@@ -369,7 +364,7 @@ public class ApplicationController {
         return html;
     }
 
-
+    @Transactional
     @FilterWith(LoginFilter.class)
     public Result diary_create (@Param("content") String content, @Param("title")String title, Context context) {
         //System.out.print("BEGINING test");
@@ -384,9 +379,6 @@ public class ApplicationController {
         em.persist(newDiary);
         List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
         Diary diary = diaryDao.getDiaryFromSearchResult(newDiary.getId());
-
-
-
 
         html.render("diary", diary);
         html.render("user", actualUser);
@@ -417,12 +409,11 @@ public class ApplicationController {
         return html;
     }
 
-
-
-
-
     @FilterWith(LoginFilter.class)
-    public Result post_diary_comment (@Param("diary") String Post, @Param("content") String Content, @Param("returnto") String returnto, Context context) {
+    public Result post_diary_comment (@Param("diary") String Post,
+                                      @Param("content") String Content,
+                                      @Param("returnto") String returnto,
+                                      Context context) {
         Session session = context.getSession();
         EntityManager em = EntityManagerProvider.get();
 
@@ -436,65 +427,71 @@ public class ApplicationController {
         else
             return Results.redirect(returnto + "#comment_" + newComment.getId());
     }
+
     @FilterWith(LoginFilter.class)
     public Result editProfile(Context context) {
         // Initial declarations
         Result html = Results.html();
-
+        Session session = context.getSession();
         UserTable actualUser = userTableDao.getUserFromSession(context);
         List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
         Profile profile= profileDao.getProfileFromUser(actualUser.getId());
-
+        if(profile.getBirthday() == null) {
+            //System.out.printf("test null: %s%n", profile.getBirthday());
+            //userProfile= new Profile(actualUser,birthday,gender,hobby,workplace);
+            profile= new Profile(actualUser,"2016-05-25","gender","hobby","workplace");
+        }
         html.render("user", actualUser);
         html.render("friends", mutualFriends);
         html.render("profile",profile);
 
         return html;
     }
+    @Transactional
     @FilterWith(LoginFilter.class)
-    public Result profile_create (Context context, @Param("birthday") String birthday, @Param("gender")String gender, @Param("hobby") String hobby,@Param("marital_status")String marital_status, @Param("work_place")String work_place,@Param("helper")String helper) {
+    public Result profile_update (@Param("username") String username,
+                                  @Param("birthday") String pBirthday,
+                                  @Param("gender")String pGender,
+                                  @Param("hobby") String pHobby,
+                                  @Param("workplace")String pWorkplace,
+                                  Context context) {
 
-        Result html = Results.html();
+        //Result html = Results.html();
 
         Session session = context.getSession();
         EntityManager em = EntityManagerProvider.get();
         UserTable actualUser = userTableDao.getUserFromSession(context);
 
-        Profile newProfile= new Profile(actualUser,birthday,gender,hobby,work_place);
+        Long userId = actualUser.getId();
+        Profile userProfile = profileDao.getProfileFromUser(userId);
 
-        List<UserTable> mutualFriends = relationshipDao.getRelationList(actualUser, RelationType.Friends);
-
-
-        /*if(profileDao.getProfileFromProfile(actualUser)!=null) {
-            profileDao.getProfileFromProfile(actualUser).setAuthor(actualUser);
-            profileDao.getProfileFromProfile(actualUser).setBirthday(birthday);
-            profileDao.getProfileFromProfile(actualUser).setGender(gender);
-            profileDao.getProfileFromProfile(actualUser).setHobby(hobby);
-            //profileDao.getProfileFromProfile(actualUser).setMarital_status(marital_status);
-            //profileDao.getProfileFromProfile(actualUser).setHelper(helper);
-            profileDao.getProfileFromProfile(actualUser).setWorkPlace(work_place);
-            em.persist(profileDao.getProfileFromProfile(actualUser));
+        if(userProfile == null) {
+            System.out.printf("update test null: %s%n", pBirthday);
+            //userProfile= new Profile(actualUser,birthday,gender,hobby,workplace);
+            userProfile= new Profile(actualUser,"birthday","gender","hobby","workplace");
+        }else {
+            System.out.printf("2test null: %s%n", pBirthday);
+            //userProfile.setAuthor(actualUser);
+            actualUser.setUsername(username);
+            userProfile.setBirthday(pBirthday);
+            userProfile.setGender(pGender);
+            userProfile.setHobby(pHobby);
+            userProfile.setWorkplace(pWorkplace);
+            System.out.printf("3test null: %s%n", userProfile.getBirthday());
         }
-        else{
-            em.persist(newProfile);
-        }*/
+        em.persist(userProfile);
+        System.out.printf("4test null: %s%n", userProfile.getBirthday());
 
-        html.render("user", actualUser);
-        html.render("friends", mutualFriends);
-        html.render("profile",newProfile);
-
-
-        return html;
-
+        return Results.redirect(Globals.PathProfile);
 
     }
     @Transactional
     @FilterWith(LoginFilter.class)
-    public Result profile_set (@Param("content") String status, Context context) {
+    public Result user_status (Context context, @Param("userStatus") String userStatus) {
         EntityManager em = EntityManagerProvider.get();
         UserTable user = userTableDao.getUserFromSession(context);
 
-        user.setStatus(status);
+        user.setStatus(userStatus);
 
         return Results.redirect(Globals.PathProfile);
     }
@@ -553,7 +550,7 @@ public class ApplicationController {
 
 
     @FilterWith(LoginFilter.class)
-    public Result profile (Context context) {
+    public Result notification (Context context) {
         // Initial declarations
         Result html = Results.html();
 

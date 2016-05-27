@@ -15,3 +15,34 @@ $(window).unload(function () {
         localStorage.setItem('search', form);
     }
 });
+
+
+var edit = false;
+
+$('#edit_button').click(function() {
+    if (edit == false) {
+        console.log('click edit'); $(this).hide();
+        $('#profile_form :input').prop('readonly', false);
+        $('#submit_button').show();
+
+        edit = true;
+    }
+});
+
+
+$('#submit_button').click(function() {
+    if (edit == true) {
+        $('#profile_form').submit();
+        console.log('click submit'); $(this).hide();
+        $('#profile_form :input').prop('readonly', true);
+        $('#edit_button').show();
+        edit = false;
+    }
+});
+
+function SubmitMsg() {
+    console.log("form submitted!");
+}
+$( "form" ).submit(function() {
+    console.log( $( this ).serializeArray() );
+});

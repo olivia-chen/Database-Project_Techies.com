@@ -6,7 +6,7 @@ public final class Globals {
     public static String PathRoot = "/";
     public static String PathMainPage = "/news";
     public static String PathLogin = "/login";
-    public static String PathProfile = "/profile";
+    public static String PathProfile = "/editProfile";
     public static String PathProfileView = "/profile/view/";
 
     

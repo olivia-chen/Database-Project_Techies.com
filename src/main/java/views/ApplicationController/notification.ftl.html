@@ -1,0 +1,47 @@
+<#import "../layout/defaultLayout.ftl.html" as layout> 
+<@layout.myLayout "Profile">    
+
+<div class="panel panel-default">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            Notifications
+        </div>
+
+        <ul class="list-group">
+            <#list requests as request>
+                <li href="#" class="list-group-item">
+                    <div class="media">
+                        <div class="media-left media-middle">
+                            <a href="/profile/view/${request.user_a.id}">
+                                <img class="media-object img-rounded avatar-48" src="/assets/img/general/${request.user_a.id}.jpg" alt="Profile picture">
+                            </a>
+                        </div>
+                        <div class="media-body">
+                            <div class="row">
+                                <div class="col-md-10 col-xs-8">
+                                    <h4 class="media-heading">
+                                        <a href="/profile/view/${request.user_a.id}">
+                                            ${request.user_a.full_name}
+                                        </a>
+                                    </h4>
+                                    <h6>${request.user_a.status}</h6>
+                                </div>
+                                <div class="col-md-2 col-xs-4">
+                                    <div class="btn-group-vertical pull-right">
+                                        <button type="button" onclick="location.href='/friends/accept/${request.id}';" class="btn btn-info"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
+                                        <button type="button" onclick="location.href='/friends/reject/${request.id}';" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </#list>
+        </ul>
+    </div>
+
+
+    </div>
+
+
+</@layout.myLayout>

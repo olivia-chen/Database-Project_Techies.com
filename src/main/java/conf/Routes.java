@@ -42,8 +42,9 @@ public class Routes implements ApplicationRoutes {
         router.POST().route("/post/comment").with(ApplicationController.class, "post_comment");
         router.POST().route("/profile/comment").with(ApplicationController.class, "profile_comment");
 
-        router.GET().route("/profile").with(ApplicationController.class, "profile");
-        router.POST().route("/profile/set").with(ApplicationController.class, "profile_set");
+        router.GET().route("/notification").with(ApplicationController.class, "notification");
+        router.POST().route("/profile_update").with(ApplicationController.class, "profile_update");
+        router.POST().route("/user_status").with(ApplicationController.class, "user_status");
 
         router.GET().route("/profile/view/{userid}").with(ApplicationController.class, "profile_view");
 
@@ -65,7 +66,7 @@ public class Routes implements ApplicationRoutes {
 
         router.GET().route("/diary_create_view").with(ApplicationController.class, "diary_create_view");
         router.POST().route("/diary_create").with(ApplicationController.class, "diary_create");
-        router.POST().route("/profile_create").with(ApplicationController.class, "profile_create");
+        //router.POST().route("/profile_create").with(ApplicationController.class, "profile_create");
 
         router.GET().route("/editProfile").with(ApplicationController.class, "editProfile");
         router.POST().route("/diary/comment").with(ApplicationController.class, "post_diary_comment");

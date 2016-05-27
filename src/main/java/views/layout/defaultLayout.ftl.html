@@ -40,7 +40,7 @@
             <div class="col-sm-3">
                 <div class="panel panel-default">
                     <div class="panel-body">
-                        <a href="/profile/set"><div class="img-responsive img-circle center-block profile-avatar" <#noescape>style="background-image: url(/assets/img/general/${user.id}.jpg)"></#noescape></div></a>
+                        <a href="/profile/view/${user.id}"><div class="img-responsive img-circle center-block profile-avatar" <#noescape>style="background-image: url(/assets/img/general/${user.id}.jpg)"></#noescape></div></a>
                         <h2 class="text-center">
                             ${user.full_name}
                         </h2>
@@ -78,6 +78,7 @@
     </div> <!-- /container -->
     <script type="text/javascript" src="/assets/webjars/jquery/2.1.3/jquery.js"></script>
     <script type="text/javascript" src="/assets/webjars/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/assets/js/general.js"></script>
 </body>
 </html>
 </#macro>

@@ -6,6 +6,7 @@ var Register_input_eula;
 
 var Register_submit;
 
+
 function Check_form() {
     var result;
     if((Register_input_password1.val() === Register_input_password2.val()) && Register_input_password1.val() != "") {
